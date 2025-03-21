@@ -125,13 +125,15 @@
   * {
     @apply border-border;
   }
-  h1{
+  h1 {
     @apply text-4xl md:text-6xl xl:text-7xl font-bold;
   }
-  h2{
+
+  h2 {
     @apply text-xl lg:text-3xl font-medium;
   }
-  h3{
+
+  h3 {
     @apply text-2xl lg:text-4xl font-medium;
   }
 
