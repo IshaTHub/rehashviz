@@ -1,6 +1,6 @@
 import NavLink from "./nav-link";
 import { FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
+//import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 export default function Header() {
   return (
@@ -20,14 +20,14 @@ export default function Header() {
       <div className="flex lg:justify-center lg:gap-12 lg:item-center gap-4">
         <NavLink href={"/#pricing"}>Pricing</NavLink>
         <SignedIn>
-          <NavLink href={"/#dashboard"}>Your Summaries</NavLink>
+          <NavLink href={"/dashboard"}>Your Summaries</NavLink>
         </SignedIn>
       </div>
 
       <div className="flex lg:flex-1 lg:justify-end">
         <SignedIn>
           <div className="flex gap-2 items-center">
-            <NavLink href={"/#upload"}>Upload a PDF</NavLink>
+            <NavLink href={"/upload"}>Upload a PDF</NavLink>
             <div>Pro</div>
             <SignedIn>
               <UserButton />
