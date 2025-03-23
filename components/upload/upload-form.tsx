@@ -1,7 +1,16 @@
-export default function UploadForm() {
+"use client"
+//import { Button } from "@/components/ui/button";
+import UploadFormInput from "./upload-form-input";
+
+
+
+export default function UploadForm({onSubmit}: UploadFormProps)  {
+  const handleSubmit = () => {
+    console.log("submit");
+  }
   return (
     <div>
-      <h1>Upload your PDF's</h1>
+        <UploadFormInput onSubmit={handleSubmit}/>
     </div>
   );
 }
