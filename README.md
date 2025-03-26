@@ -36,4 +36,4 @@
 
 # Upload Service Architecture <br/>
 
-![Image Alt]([image_url](https://github.com/IshaTHub/rehashviz/blob/d4c02037dbd3e482a3f313ed47620fe04c115c8a/USA.png))
+![Image Alt](https://github.com/IshaTHub/rehashviz/blob/d4c02037dbd3e482a3f313ed47620fe04c115c8a/USA.png)
