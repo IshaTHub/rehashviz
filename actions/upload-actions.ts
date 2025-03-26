@@ -1,8 +1,10 @@
-"use server";
-import { fetchAndExtractdfText } from "@/lib/langchain";
 // Anytime you want to expose a specific funtion in nextjs, as a public http endpoint without having
 // to use an API folder , you would need to create a new file and add "use server" directive on top,
 // that get exported in the specific file , are infact server actions
+
+"use server";
+import { fetchAndExtractdfText } from "@/lib/langchain";
+import { generateSummaryFromOpenAI } from "@/lib/openai";
 
 export async function generatePdfSummary(
   uploadResponse: [
@@ -42,16 +44,32 @@ export async function generatePdfSummary(
     };
   }
 
-  try{    
-    const pdfText = await fetchAndExtractdfText(pdfUrl);  
-    console.log(pdfText);     
-  } catch(err){
-    return {
+  try {
+    const pdfText = await fetchAndExtractdfText(pdfUrl);
+    console.log(pdfText);
+
+    let summary;
+
+    try {
+      const summary = await generateSummaryFromOpenAI(pdfText);
+      console.log(summary);
+    } catch (error) {
+      console.log(error);
+      //call gemini code
+    }
+
+    if (!summary) {
+      return {
         success: false,
-        message: "File upload failed",
+        message: "failed to generate summary",
         data: null,
       };
+    }
+  } catch (err) {
+    return {
+      success: false,
+      message: "File upload failed",
+      data: null,
+    };
   }
-
 }
-
