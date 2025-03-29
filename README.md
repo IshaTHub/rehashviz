@@ -33,3 +33,7 @@
 📜 TypeScript for static typing and enhanced development experience <br/>
 💅 TailwindCSS 4 for utility-first, responsive styling (also learn to upgrade to Tailwind v4) <br/>
 🚀 Deployment on Vercel <br/>
+
+# Upload Service Architecture <br/>
+
+![Image Alt](https://github.com/IshaTHub/rehashviz/blob/d4c02037dbd3e482a3f313ed47620fe04c115c8a/USA.png)
