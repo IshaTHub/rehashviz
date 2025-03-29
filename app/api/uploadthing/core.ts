@@ -16,7 +16,7 @@ export const ourFileRouter = {
     }
 ).onUploadComplete(async ({metadata, file}) =>
 {console.log("Upload complete", metadata.userId);
-    console.log('file url', file.url);
+    //console.log('file url', file.ufsUrl);
     
     return {userId: metadata.userId, file }
 })

@@ -2,10 +2,14 @@
 import { useUploadThing } from "@/utils/uploadthings";
 //import { Button } from "@/components/ui/button";
 import UploadFormInput from "./upload-form-input";
-import { generatePdfSummary } from "@/actions/upload-actions";
+import {
+  generatePdfSummary,
+  storePdfSummaryAction,
+} from "@/actions/upload-actions";
 import { z } from "zod";
-import { Toaster, toast } from "sonner";
-
+import { toast } from "sonner";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 const schema = z.object({
   file: z
     .instanceof(File, { message: "Please upload a valid PDF file" })
@@ -20,6 +24,9 @@ const schema = z.object({
 });
 
 export default function UploadForm() {
+  const formRef = useRef<HTMLFormElement>(null); //null here means that the formRef is not yet initialized
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const { startUpload, routeConfig } = useUploadThing("pdfUploader", {
     onClientUploadComplete: () => {
       console.log("uploaded successfully!");
@@ -30,61 +37,104 @@ export default function UploadForm() {
         description: err.message,
       });
     },
-    onUploadBegin: ({ data }) => {
-      console.log("upload has begun for", data);
+    onUploadBegin: (fileName) => {
+      console.log("upload has begun for", fileName);
     },
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     //handle the form submission
     e.preventDefault(); // prevent the default form submission behavior
-    console.log("submitted");
-    const formData = new FormData(e.currentTarget);
-    const file = formData.get("file") as File; // so that typescript knows it's a file.
-    //console.log(file);
 
-    const validateFields = schema.safeParse({ file }); //it gives us the success or failure
-    if (!validateFields.success) {
-      //if the file is not valid, we return
-      toast.error("❌ Something went wrong", {
-        description:
-          validateFields.error.flatten().fieldErrors.file?.[0] ??
-          "Invalid file",
+    try {
+      setIsLoading(true); //when the form is submitted, the loading state is set to true
+
+      const formData = new FormData(e.currentTarget);
+      const file = formData.get("file") as File; // so that typescript knows it's a file.
+      //console.log(file);
+
+      const validateFields = schema.safeParse({ file }); //it gives us the success or failure
+      if (!validateFields.success) {
+        //if the file is not valid, we return
+        toast.error("❌ Something went wrong", {
+          description:
+            validateFields.error.flatten().fieldErrors.file?.[0] ??
+            "Invalid file",
+        });
+        setIsLoading(false); //when the file is not valid, we set the loading state to false
+        return;
+      }
+
+      toast.info("📄 Uploading your PDF...", {
+        description: "We are uploading your PDF!",
       });
-      return;
-    }
 
-    toast.info("📄 Uploading your PDF...", {
-      description: "We are uploading your PDF!",
-    });
+      const resp = await startUpload([file]);
+      if (!resp) {
+        toast.error("❌ Something went wrong", {
+          description: "Please use a different file",
+        });
+        setIsLoading(false);
+        return;
+      }
 
-    const resp = await startUpload([file]);
-    if (!resp) {
-      toast.error("❌ Something went wrong", {
-        description: "Please use a different file",
+      toast.info("📄 Processing your PDF", {
+        description: "Hang tight, our AI is reading through your file ✨",
       });
-      return;
+      // validating the fields
+      //schema with zod
+      //upload the file to uploadthing
+
+      //parse the pdf using langchain
+      const result = await generatePdfSummary(resp);
+
+      const { data = null, message = null } = result || {};
+
+      if (data) {
+        let storedResult: any;
+        toast.info("📄 Saving your PDF..", {
+          description: "Hang tight, we are saving your summary! ✨",
+        });
+
+        if (data.summary) {
+          storedResult = await storePdfSummaryAction({
+            summary: data.summary,
+            fileUrl: resp[0].serverData.file.url,
+            title: data.title,
+            fileName: file.name,
+            
+          });
+          //save the summary to the database
+          toast.success("📄 Summary generated!", {
+            description:
+              "Your summary has been saved and summarized successfully!",
+          });
+
+          formRef.current?.reset(); //reset the form
+
+          //redirect to the [id] summary page
+          router.push(`/summaries/${storedResult.data.id}`);
+        }
+      }
+
+      //summarize the pdf using AI
+
+      
+    } catch (error) {
+      setIsLoading(false);
+      console.error("error occured", error);
+      formRef.current?.reset();
+    } finally {
+      setIsLoading(false);
     }
-
-    toast.info("📄 Processing your PDF", {
-      description: "Hang tight, our AI is reading through your file ✨",
-    });
-    // validating the fields
-    //schema with zod
-    //upload the file to uploadthing
-
-
-    //parse the pdf using langchain
-const summary = await generatePdfSummary(resp);
-console.log({summary});
-
-    //summarize the pdf using AI
-    //save the summary to the database
-    //redirect to the [id] summary page
   };
   return (
     <div className="flex flex-col gap-8 w-full max-w-2xl mx-auto">
-      <UploadFormInput onSubmit={handleSubmit} />
+      <UploadFormInput
+        isLoading={isLoading}
+        onSubmit={handleSubmit}
+        ref={formRef}
+      />
     </div>
   );
 }
