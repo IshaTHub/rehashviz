@@ -6,9 +6,10 @@ import SummaryCard from "@/components/summaries/summary-card";
 import { getSummaries } from "@/lib/summaries";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
+import EmptySummaryState from "@/components/summaries/empty-summary-state";
 
 export default async function DashboardPage() {
-  const user = await currentUser();  //clerk user
+  const user = await currentUser(); //clerk user
   const userId = user?.id;
   if (!userId) {
     redirect("/sign-in");
@@ -43,8 +44,9 @@ export default async function DashboardPage() {
               </Link>
             </Button>
           </div>
-          <div className="bg-rose-50 boreder border-rose-200 rounded-lg p-4 text-rose-800">
-            <div className="mb-6">
+
+          <div className="mb-6">
+            <div className="bg-rose-50 boreder border-rose-200 rounded-lg p-4 text-rose-800">
               <p className="text-sm">
                 You have reached a limit of {uploadLimit} summaries on the basic
                 plan{" "}
@@ -58,11 +60,16 @@ export default async function DashboardPage() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 sm:px-0">
-            {summaries.map((summary, index) => (
-              <SummaryCard key={index} summary={summary} />
-            ))}
-          </div>
+
+          {summaries.length === 0 ? (
+            <EmptySummaryState />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 sm:px-0">
+              {summaries.map((summary, index) => (
+                <SummaryCard key={index} summary={summary} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </main>

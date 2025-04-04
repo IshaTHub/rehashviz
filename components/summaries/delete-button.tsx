@@ -12,7 +12,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 interface DeleteButtonProps {
   summaryId: string;
@@ -20,18 +20,20 @@ interface DeleteButtonProps {
 
 export default function DeleteButton({ summaryId }: DeleteButtonProps) {
   const [open, setOpen] = useState(false);
-
+  const [isPending, startTransition] = useTransition(); // Use useTransition to manage pending state
   const handleDelete = async () => {
-    // Handle delete action here
-    const result = await deleteSummaryAction({ summaryId }); // Replace with your delete function
-    if (!result.success) {
-    toast.error("❌ Something went wrong", {
-      description: (
-        <span className="text-gray-950">Failed to delete summary</span>
-      ),
+    startTransition(async () => {
+    
+      const result = await deleteSummaryAction({ summaryId }); 
+      if (!result.success) {
+        toast.error("❌ Something went wrong", {
+          description: (
+            <span className="text-gray-950">Failed to delete summary</span>
+          ),
+        });
+      }
+      setOpen(false); 
     });
-     }
-    setOpen(false); // Close the dialog after deletion
   };
 
   return (
@@ -68,7 +70,7 @@ export default function DeleteButton({ summaryId }: DeleteButtonProps) {
             className="bg-gray-900 hover:bg-gray-600"
             onClick={handleDelete}
           >
-            Delete
+            {isPending? 'Deleting...' : 'Delete'}
           </Button>
         </DialogFooter>
       </DialogContent>
