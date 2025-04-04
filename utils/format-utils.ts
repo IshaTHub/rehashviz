@@ -1,8 +1,13 @@
+import {clsx, ClassValue} from 'clsx';
+import {twMerge} from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs)); 
+}
+
 export function formatFileNameAsTitle(fileName: string):
 
-string {
-
-// Remove file extension and replace special characters with spaces
+string {   // Remove file extension and replace special characters with spaces
 
 const withoutExtension = fileName.replace(/\.[^/.]+$/, '');
 

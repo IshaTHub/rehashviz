@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 
 export default async function DashboardPage() {
-  const user = await currentUser();
+  const user = await currentUser();  //clerk user
   const userId = user?.id;
   if (!userId) {
     redirect("/sign-in");

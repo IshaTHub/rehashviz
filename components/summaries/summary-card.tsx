@@ -1,8 +1,11 @@
 import { Card } from "@/components/ui/card";
-import DeleteButton from "./delete-button";
+import DeleteButton from "@/components/summaries/delete-button";
 import Link from "next/link";
 import { FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {formatDistanceToNow } from 'date-fns';
+import { formatFileNameAsTitle } from "@/utils/format-utils";
+
 const SummaryHeader = ({
   fileUrl,
   title,
@@ -18,9 +21,13 @@ const SummaryHeader = ({
       <div className="flex-1 min-w-0">
         {" "}
         <h3 className="text-base xl:text-lg font-semibold text-gray-900 truncate w-4/5">
-          {title}
+          {title || formatFileNameAsTitle(fileUrl)}
         </h3>
-        <p className="text-sm text-gray-500">{new Date(createdAt).toLocaleDateString()}</p>
+        <p className="text-sm text-gray-500">
+          {formatDistanceToNow(new Date(createdAt), {
+            addSuffix: true,  }
+          )}
+        </p>
       </div>
     </div>
   );
@@ -31,9 +38,10 @@ const StatusBadge = ({ status }: { status: string }) => {
     <div className="flex items-center gap-2">
       <span
         className={cn(
-          "text-xs font-medium px-2.5 py-0.5 rounded-full",
-          status === "completed" && "bg-green-100 text-green-800",
-          status === "failed" && "bg-red-100 text-red-800"
+          "text-xs font-medium px-2.5 py-0.5 rounded-full capitalize",
+          status === "completed"
+            ? "bg-green-100 text-green-800"
+            : "bg-red-100 text-yellow-800"
         )}
       >
         {status}
@@ -47,7 +55,7 @@ export default function SummaryCard({ summary }: { summary: any }) {
     <div>
       <Card className="relative h-full ">
         <div className="abosolute top-2 right-2">
-          <DeleteButton />
+          <DeleteButton summaryId = {summary.id} />
         </div>
         <Link href={`/summaries/${summary.id}`} className="block p-4 sm:p-6">
           <div className="flex flex-col gap-3 sm:gap-4">
