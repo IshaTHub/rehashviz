@@ -25,7 +25,7 @@ export async function generateSummaryFromOpenAI(pdfText: string){  //pdfText is 
         
         return completion.choices[0].message.content;
     } catch (error: any) {
-        if(error?.status == 429){  //429 is "Too many requests"
+        if(error?.status === 429){  //429 is "Too many requests"
             throw new Error("RATE_LIMIT_EXCEEDED");
         }
         throw error;
