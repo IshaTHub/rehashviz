@@ -6,6 +6,7 @@ import { SourceInfo } from "@/components/summaries/source-info";
 import { FileText } from "lucide-react";
 import { SummaryViewer } from "@/components/summaries/summary-viewer";
 
+
 export default async function SummaryPage(props: {
 	params: Promise<{ id: string }>;
 }) {
@@ -24,8 +25,10 @@ export default async function SummaryPage(props: {
 		file_name,
 		word_count,
 		created_at,
-		reading_time,
+		orignalFileUrl,
 	} = summary;
+
+	const readingTime = Math.ceil((word_count || 0) / 200); // Assuming an average reading speed of 200 words per minute
 
 	return (
 		<div className="relative isolate min-h-screen bg-linear-to-b from-rose-50/40 to-white">
@@ -36,10 +39,16 @@ export default async function SummaryPage(props: {
 						<SummaryHeader
 							title={title}
 							createdAt={created_at}
-							readingTime={reading_time}
+							readingTime={readingTime}
 						/>
 					</div>
-					{file_name && <SourceInfo fileName={file_name} />}
+					{file_name && <SourceInfo 
+					fileName={file_name}
+					title = {title}
+					orignalFileUrl = {orignalFileUrl}
+					summaryText = {summary_text}
+					createdAt={created_at}
+					/>}
 					<div className="mt-4 relative sm:mt-8 lg:mt-16">
 						<div
 							className="relative p-4 sm:p-6 lg:p-8 bg-white/80 backdrop-blur-md rounded-2xl
