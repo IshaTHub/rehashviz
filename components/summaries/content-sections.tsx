@@ -1,11 +1,10 @@
 import { parseEmojiPoint, parsePoint } from "@/lib/summary-helpers";
 
 
-const EmojiPoint = ({ point }: { point: string; }) => {
+const EmojiPoint = ({ point, index }: { point: string; index: number }) => {
 	const { emoji, text } = parseEmojiPoint(point) ?? {};
 	return (
 		<div
-			
 			className="group relative bg-linear-to-br
 			from-gray-200/[0.08] to-gray-400/[0.03] p-4
 			rounded-2xl border border-gray-500/10
@@ -60,9 +59,9 @@ export default function ContentSection({
                 if (isEmpty) return null;
 
                 if (hasEmoji || isMainPoint) {
-                    return <EmojiPoint key={`point-${index}`} point={point} index={index} />;
+                    return <EmojiPoint  point={point} index={index} />;
                 }
-                return <RegularPoint key={`point-${index}`} point={point} index={index} />;
+                return <RegularPoint key={point} point={point} index={index} />;
             })}
         </div>
     );

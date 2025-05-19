@@ -37,8 +37,8 @@ export default function UploadForm() {
         description: err.message,
       });
     },
-    onUploadBegin: (fileName) => {
-      console.log("upload has begun for", fileName);
+    onUploadBegin: (data) => {
+      console.log("upload has begun for", data);
     },
   });
 
@@ -69,8 +69,8 @@ export default function UploadForm() {
         description: "We are uploading your PDF!",
       });
 
-      const resp = await startUpload([file]);
-      if (!resp) {
+      const uploadResponse = await startUpload([file]);
+      if (!uploadResponse) {
         toast.error("❌ Something went wrong", {
           description: "Please use a different file",
         });
@@ -85,35 +85,45 @@ export default function UploadForm() {
       //schema with zod
       //upload the file to uploadthing
 
+      const uploadFileUrl = uploadResponse[0].serverData.fileUrl;
+
       //parse the pdf using langchain
-      const result = await generatePdfSummary(resp);
+      const result = await generatePdfSummary({
+        fileUrl: uploadResponse[0].serverData.fileUrl,
+        fileName: file.name
+      });
 
       const { data = null, message = null } = result || {};
 
       if (data) {
-        let storedResult: any;
         toast.info("📄 Saving your PDF..", {
           description: "Hang tight, we are saving your summary! ✨",
         });
 
         if (data.summary) {
-          storedResult = await storePdfSummaryAction({
+          const storedResult = await storePdfSummaryAction({
             summary: data.summary,
-            fileUrl: resp[0].serverData.file.url,
+            fileUrl: uploadFileUrl,
             title: data.title,
             fileName: file.name,
-            
-          });
-          //save the summary to the database
-          toast.success("📄 Summary generated!", {
-            description:
-              "Your summary has been saved and summarized successfully!",
           });
 
-          formRef.current?.reset(); //reset the form
+          if (storedResult?.data?.id) {
+            //save the summary to the database
+            toast.success("📄 Summary generated!", {
+              description:
+                "Your summary has been saved and summarized successfully!",
+            });
 
-          //redirect to the [id] summary page
-          router.push(`/summaries/${storedResult.data.id}`);
+            formRef.current?.reset(); //reset the form
+
+            //redirect to the [id] summary page
+            router.push(`/summaries/${storedResult.data.id}`);
+          } else {
+            toast.error("❌ Failed to save summary", {
+              description: storedResult?.message || "Unknown error",
+            });
+          }
         }
       }
 

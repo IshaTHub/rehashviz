@@ -15,21 +15,9 @@ interface PdfSummaryType {
   fileName: string;
 }
 
-export async function generatePdfSummary(
-  uploadResponse: [
-    {
-      // uploadResponse is of type serverData
-      serverData: {
-        userId: string;
-        file: {
-          ufsUrl: string; // Updated from 'url' to 'ufsUrl'
-          name: string;
-        };
-      };
-    }
-  ]
+export async function generatePdfSummary({fileUrl, fileName}: {fileUrl: string, fileName: string}
 ) {
-  if (!uploadResponse) {
+  if (!fileUrl) {
     //error handling
     return {
       success: false,
@@ -38,14 +26,8 @@ export async function generatePdfSummary(
     };
   }
 
-  const {
-    serverData: {
-      userId,
-      file: { ufsUrl: pdfUrl, name: fileName }, // Updated 'url' to 'ufsUrl'
-    },
-  } = uploadResponse[0]; //retrieving the data from the serverData
 
-  if (!pdfUrl) {
+  if (!fileUrl) {
     return {
       success: false,
       message: "File upload failed",
@@ -54,13 +36,14 @@ export async function generatePdfSummary(
   }
 
   try {
-    const pdfText = await fetchAndExtractdfText(pdfUrl);
+    const pdfText = await fetchAndExtractdfText(fileUrl);
     console.log(pdfText);
 
-    let summary = "";
+    let summary: string | undefined;
     try {
-      summary = await generateSummaryFromOpenAI(pdfText);
-      console.log("Generated Summary (OpenAI):", summary);
+      const openAISummary = await generateSummaryFromOpenAI(pdfText);
+      summary = openAISummary === null ? undefined : openAISummary;
+      console.log({summary});
     } catch (error) {
       console.log("OpenAI Failed:", error);
       if (error instanceof Error && error.message === "RATE_LIMIT_EXCEEDED") {
@@ -107,7 +90,7 @@ async function savePdfSummary({
   summary,
   title,
   fileName,
-}: PdfSummaryType) {
+}: PdfSummaryType): Promise<{ id: number; summary_text: string }> {
   // sql inserting pdf summary
   try {
     const sql = await getDbConnection(); //get db connection
@@ -116,7 +99,7 @@ async function savePdfSummary({
     const [savedSummary] =
       await sql`INSERT INTO pdf_summaries (user_id, original_file_url, summary_text, title, file_name) 
     VALUES (${userId}, ${fileUrl}, ${summary}, ${title}, ${fileName}) RETURNING id, summary_text`;
-    return savedSummary; //returning the saved summary
+    return savedSummary as { id: number; summary_text: string }; //returning the saved summary
   } catch (error) {
     console.error("Failed to save PDF summary", error);
     throw error;
@@ -132,7 +115,7 @@ export async function storePdfSummaryAction({
   //user is logged in, has a user id
   //savePdfSummary
   //savePdfSummary()
-  let savedSummary: any;
+  let savedSummary: { id: number; summary_text: string } | undefined;
   try {
     const { userId } = await auth(); //whenever we want to get the user id from server side ,clerk, we need to use auth()
     console.log("Store PDF Summary Action called with:", {
