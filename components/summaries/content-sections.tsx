@@ -58,10 +58,13 @@ export default function ContentSection({
 
                 if (isEmpty) return null;
 
-                if (hasEmoji || isMainPoint) {
-                    return <EmojiPoint  point={point} index={index} />;
-                }
-                return <RegularPoint key={point} point={point} index={index} />;
+    const uniqueKey = `${point}-${index}`; // Define a unique key
+
+    if (hasEmoji || isMainPoint) {
+        return <EmojiPoint key={uniqueKey} point={point} index={index} />;
+    }
+
+    return <RegularPoint key={uniqueKey} point={point} index={index} />;
             })}
         </div>
     );
